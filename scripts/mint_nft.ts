@@ -4,11 +4,14 @@ import {
   generateSigner,
   keypairIdentity,
   percentAmount,
+  some,
+  publicKey,
 } from "@metaplex-foundation/umi";
 import {
   mplTokenMetadata,
   createNft,
   fetchDigitalAsset,
+  verifyCollectionV1,
 } from "@metaplex-foundation/mpl-token-metadata";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import "dotenv/config";
@@ -16,13 +19,15 @@ import fs from "fs";
 import path from "path";
 
 const NFT_METADATA = {
-  name: "SKLIM TEAM",
+  name: "SKLIM NFT",
   symbol: "SKLIM",
   imageFilename: "logo.jpg",
-  description: "Encode Autumn Solana Bootcamp Q3-2023 - Group 2 Project",
 };
 
 const umi = createUmi("https://api.devnet.solana.com");
+const COLLECTION_NFT_ADDRESS = publicKey(
+  "5PAMMbZ5E2ZKLvncK4PSsftd897N17h1FXJw8UzAKBWC"
+);
 
 async function bootstrapMasterEdition() {
   const keypair = getKeypair();
@@ -41,17 +46,22 @@ async function bootstrapMasterEdition() {
     symbol: NFT_METADATA.symbol,
     uri: nftUri,
     sellerFeeBasisPoints: percentAmount(0),
-    isCollection: true,
+    collection: some({
+      key: COLLECTION_NFT_ADDRESS,
+      verified: false,
+    }),
   }).sendAndConfirm(umi);
 
   setTimeout(async () => {
     console.log("Fetching NFT...");
     const asset = await fetchDigitalAsset(umi, nftMint.publicKey);
     console.log(asset);
-    fs.writeFileSync(
-      path.resolve(__dirname, "../assets/master_edition.json"),
-      JSON.stringify({ publicKey: asset.publicKey })
-    );
+
+    console.log("Verifying NFT...");
+    await verifyCollectionV1(umi, {
+      metadata: nftMint.publicKey,
+      collectionMint: COLLECTION_NFT_ADDRESS,
+    }).sendAndConfirm(umi);
   }, 10000);
 }
 
@@ -77,7 +87,6 @@ async function uploadMetadata() {
   return await umi.uploader.uploadJson({
     name: NFT_METADATA.name,
     symbol: NFT_METADATA.symbol,
-    description: NFT_METADATA.description,
     image: imageUri,
   });
 }

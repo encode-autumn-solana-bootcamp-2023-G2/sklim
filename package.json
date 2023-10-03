@@ -3,7 +3,8 @@
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
-    "bootstrapMasterEdition": "ts-node ./scripts/bootstrap_master_edition.ts"
+    "bootstrapMasterEdition": "ts-node ./scripts/bootstrap_master_edition.ts",
+    "mint_nft": "ts-node ./scripts/mint_nft.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.28.0",
