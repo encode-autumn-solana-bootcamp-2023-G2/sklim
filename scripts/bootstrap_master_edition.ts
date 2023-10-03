@@ -34,6 +34,7 @@ async function bootstrapMasterEdition() {
 
   const nftMint = generateSigner(umi);
   const nftUri = await uploadMetadata();
+  console.log("Creating NFT...");
   await createNft(umi, {
     mint: nftMint,
     name: NFT_METADATA.name,
@@ -43,14 +44,23 @@ async function bootstrapMasterEdition() {
     isCollection: true,
   }).sendAndConfirm(umi);
 
-  const asset = await fetchDigitalAsset(umi, nftMint.publicKey);
-  console.log(asset);
+  console.log("Fetching NFT...");
+  setTimeout(async () => {
+    const asset = await fetchDigitalAsset(umi, nftMint.publicKey);
+    console.log(asset);
+    fs.writeFileSync(
+      path.resolve(__dirname, "../assets/master_edition.json"),
+      JSON.stringify({ publicKey: asset.publicKey })
+    );
+  }, 10000);
 }
 
 async function uploadMetadata() {
   const imageBuffer = fs.readFileSync(
     path.resolve(__dirname, "../assets/logo.jpg")
   );
+
+  console.log("Uploading image...");
   const [imageUri] = await umi.uploader.upload([
     {
       buffer: imageBuffer,
@@ -63,6 +73,7 @@ async function uploadMetadata() {
     },
   ]);
 
+  console.log("Uploading metadata...");
   return await umi.uploader.uploadJson({
     name: NFT_METADATA.name,
     symbol: NFT_METADATA.symbol,
@@ -72,6 +83,7 @@ async function uploadMetadata() {
 }
 
 function getKeypair() {
+  console.log("Loading private key...");
   const secretKey = bs58.decode(process.env.PRIVATE_KEY!);
   return umi.eddsa.createKeypairFromSecretKey(secretKey);
 }
