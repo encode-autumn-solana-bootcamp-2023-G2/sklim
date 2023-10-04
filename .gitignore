@@ -6,4 +6,5 @@ target
 node_modules
 test-ledger
 .yarn
-assets/master_edition.json
+assets/collection.json
+assets/collection_keypair.json

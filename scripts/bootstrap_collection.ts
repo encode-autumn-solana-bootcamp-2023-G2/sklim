@@ -24,7 +24,7 @@ const NFT_METADATA = {
 
 const umi = createUmi("https://api.devnet.solana.com");
 
-async function bootstrapMasterEdition() {
+async function main() {
   const keypair = getKeypair();
 
   umi
@@ -35,24 +35,25 @@ async function bootstrapMasterEdition() {
   const nftMint = generateSigner(umi);
   const nftUri = await uploadMetadata();
   console.log("Creating NFT...");
-  await createNft(umi, {
+  const nftTx = createNft(umi, {
     mint: nftMint,
     name: NFT_METADATA.name,
     symbol: NFT_METADATA.symbol,
     uri: nftUri,
     sellerFeeBasisPoints: percentAmount(0),
     isCollection: true,
-  }).sendAndConfirm(umi);
+  });
+  await nftTx.sendAndConfirm(umi);
 
   setTimeout(async () => {
     console.log("Fetching NFT...");
     const asset = await fetchDigitalAsset(umi, nftMint.publicKey);
     console.log(asset);
     fs.writeFileSync(
-      path.resolve(__dirname, "../assets/master_edition.json"),
+      path.resolve(__dirname, "../assets/collection.json"),
       JSON.stringify({ publicKey: asset.publicKey })
     );
-  }, 10000);
+  }, 15000);
 }
 
 async function uploadMetadata() {
@@ -88,4 +89,4 @@ function getKeypair() {
   return umi.eddsa.createKeypairFromSecretKey(secretKey);
 }
 
-bootstrapMasterEdition();
+main();

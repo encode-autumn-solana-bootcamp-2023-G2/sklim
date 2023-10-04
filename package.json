@@ -3,7 +3,7 @@
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
-    "bootstrapMasterEdition": "ts-node ./scripts/bootstrap_master_edition.ts",
+    "mint_collection": "ts-node ./scripts/bootstrap_collection.ts",
     "mint_nft": "ts-node ./scripts/mint_nft.ts"
   },
   "dependencies": {

@@ -11,12 +11,13 @@ import {
   mplTokenMetadata,
   createNft,
   fetchDigitalAsset,
-  verifyCollectionV1,
 } from "@metaplex-foundation/mpl-token-metadata";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
+import { Keypair } from "@solana/web3.js";
+import { publicKey as collectionMintPublicKey } from "../assets/collection.json";
 
 const NFT_METADATA = {
   name: "SKLIM NFT",
@@ -25,11 +26,9 @@ const NFT_METADATA = {
 };
 
 const umi = createUmi("https://api.devnet.solana.com");
-const COLLECTION_NFT_ADDRESS = publicKey(
-  "5PAMMbZ5E2ZKLvncK4PSsftd897N17h1FXJw8UzAKBWC"
-);
+const COLLECTION_NFT_ADDRESS = publicKey(collectionMintPublicKey);
 
-async function bootstrapMasterEdition() {
+async function main() {
   const keypair = getKeypair();
 
   umi
@@ -46,6 +45,7 @@ async function bootstrapMasterEdition() {
     symbol: NFT_METADATA.symbol,
     uri: nftUri,
     sellerFeeBasisPoints: percentAmount(0),
+    tokenOwner: publicKey(Keypair.generate().publicKey),
     collection: some({
       key: COLLECTION_NFT_ADDRESS,
       verified: false,
@@ -56,13 +56,9 @@ async function bootstrapMasterEdition() {
     console.log("Fetching NFT...");
     const asset = await fetchDigitalAsset(umi, nftMint.publicKey);
     console.log(asset);
-
-    console.log("Verifying NFT...");
-    await verifyCollectionV1(umi, {
-      metadata: nftMint.publicKey,
-      collectionMint: COLLECTION_NFT_ADDRESS,
-    }).sendAndConfirm(umi);
   }, 10000);
+
+  // TODO: Verified NFT in the collection
 }
 
 async function uploadMetadata() {
@@ -97,4 +93,4 @@ function getKeypair() {
   return umi.eddsa.createKeypairFromSecretKey(secretKey);
 }
 
-bootstrapMasterEdition();
+main();
